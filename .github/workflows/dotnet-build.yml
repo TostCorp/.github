@@ -1,0 +1,67 @@
+name: .NET Build and Test
+
+on:
+  workflow_call:
+    secrets:
+      NUGET_GITHUB_USERNAME:
+        required: true
+      AUTH_TOKEN:
+        required: true
+
+    inputs:
+      ref:
+        type: string
+        required: true
+      dotnet_version:
+        type: string
+        default: 8.x
+      version:
+        type: string
+        required: true
+      configuration:
+        type: string
+        default: Release
+      
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
+          ref: ${{ inputs.ref }}
+    
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
+    
+      - name: Add Github nuget repo
+        run: dotnet nuget add source --username ${{ secrets.NUGET_GITHUB_USERNAME }} --password ${{ secrets.AUTH_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/TostOrg/index.json"
+    
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+    
+      - name: Build
+        run: dotnet build --no-restore --configuration ${{ inputs.configuration }} -p:Version=${{ inputs.version }}
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v4.3.0
+        with:
+          name: "build-artifact"
+          path: "./"
+          if-no-files-found: error
+          overwrite: true
+    
+      - name: Test
+        run: dotnet test --no-build --configuration ${{ inputs.configuration }} --verbosity normal -p:Version=${{ inputs.version }}

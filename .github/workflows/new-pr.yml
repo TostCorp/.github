@@ -1,0 +1,60 @@
+name: Push new PR
+
+on:
+  workflow_dispatch:
+
+  pull_request:
+    types: [ "opened", "synchronize", "reopened" ]
+    branches: [ "main" ]
+
+jobs:
+  codeql:
+    permissions:
+      security-events: write
+    uses: TostOrg/DevOpsTemplates/.github/workflows/codeql.yml@main
+    with:
+      language: csharp
+
+  tag:
+    permissions:
+      contents: write
+    uses: TostOrg/DevOpsTemplates/.github/workflows/git-tag.yml@main
+    secrets: 
+      AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+      is_prerelease: true
+      prerelease_suffix: ${{ github.event.pull_request.head.ref }}
+      
+  build:
+    needs: tag
+    permissions:
+      contents: read
+    uses: TostOrg/DevOpsTemplates/.github/workflows/dotnet-build.yml@main
+    secrets: 
+      AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      NUGET_GITHUB_USERNAME: ${{ secrets.NUGET_GITHUB_USERNAME }}
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+      version: ${{ needs.tag.outputs.tag }}
+
+  nuget-pack:
+    needs: [ "tag", "build" ]
+    permissions:
+      contents: read
+    uses: TostOrg/DevOpsTemplates/.github/workflows/nuget-pack.yml@main
+    secrets: 
+      AUTH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      NUGET_GITHUB_USERNAME: ${{ secrets.NUGET_GITHUB_USERNAME }}
+    with:
+      version: ${{ needs.tag.outputs.tag }}
+
+  nuget-push-github:
+    needs: [ "nuget-pack" ]
+    permissions:
+      packages: write
+    uses: TostOrg/DevOpsTemplates/.github/workflows/nuget-push.yml@main
+    secrets: 
+      AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      AUTH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      NUGET_GITHUB_USERNAME: ${{ secrets.NUGET_GITHUB_USERNAME }}
