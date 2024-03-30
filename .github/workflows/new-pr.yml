@@ -11,14 +11,14 @@ jobs:
   codeql:
     permissions:
       security-events: write
-    uses: TostOrg/DevOpsTemplates/.github/workflows/codeql.yml@main
+    uses: TostCorp/Workflows/.github/workflows/codeql.yml@main
     with:
       language: csharp
 
   tag:
     permissions:
       contents: write
-    uses: TostOrg/DevOpsTemplates/.github/workflows/git-tag.yml@main
+    uses: TostCorp/Workflows/.github/workflows/git-tag.yml@main
     secrets: 
       AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     with:
@@ -30,7 +30,7 @@ jobs:
     needs: tag
     permissions:
       contents: read
-    uses: TostOrg/DevOpsTemplates/.github/workflows/dotnet-build.yml@main
+    uses: TostCorp/Workflows/.github/workflows/dotnet-build.yml@main
     secrets: 
       AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       NUGET_GITHUB_USERNAME: ${{ secrets.NUGET_GITHUB_USERNAME }}
@@ -42,7 +42,7 @@ jobs:
     needs: [ "tag", "build" ]
     permissions:
       contents: read
-    uses: TostOrg/DevOpsTemplates/.github/workflows/nuget-pack.yml@main
+    uses: TostCorp/Workflows/.github/workflows/nuget-pack.yml@main
     secrets: 
       AUTH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       NUGET_GITHUB_USERNAME: ${{ secrets.NUGET_GITHUB_USERNAME }}
@@ -53,7 +53,7 @@ jobs:
     needs: [ "nuget-pack" ]
     permissions:
       packages: write
-    uses: TostOrg/DevOpsTemplates/.github/workflows/nuget-push.yml@main
+    uses: TostCorp/Workflows/.github/workflows/nuget-push.yml@main
     secrets: 
       AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       AUTH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
