@@ -1,24 +1,25 @@
-name: Push closed PR to Main
-
 on:
-  workflow_dispatch:
-
-  pull_request:
-    types: [ "closed" ]
-    branches: [ "main" ]
+  workflow_call:
+    secrets:
+      AUTH_GITHUB_TOKEN:
+        required: true
+      NUGET_GITHUB_USERNAME:
+        required: true
+      AUTH_TOKEN:
+        required: true
 
 jobs:
   codeql:
     permissions:
       security-events: write
-    uses: TostCorp/Workflows/.github/workflows/codeql.yml@main
+    uses: TostCorp/.github/workflows/codeql.yml@main
     with:
       language: csharp
 
   tag:
     permissions:
       contents: write
-    uses: TostCorp/Workflows/.github/workflows/git-tag.yml@main
+    uses: TostCorp/.github/workflows/git-tag.yml@main
     secrets: 
       AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     with:
@@ -28,7 +29,7 @@ jobs:
     needs: tag
     permissions:
       contents: read
-    uses: TostCorp/Workflows/.github/workflows/dotnet-build.yml@main
+    uses: TostCorp/.github/workflows/dotnet-build.yml@main
     secrets: 
       AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       NUGET_GITHUB_USERNAME: ${{ secrets.NUGET_GITHUB_USERNAME }}
@@ -40,7 +41,7 @@ jobs:
     needs: [ "tag", "build" ]
     permissions:
       contents: read
-    uses: TostCorp/Workflows/.github/workflows/nuget-pack.yml@main
+    uses: TostCorp/.github/workflows/nuget-pack.yml@main
     secrets: 
       AUTH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       NUGET_GITHUB_USERNAME: ${{ secrets.NUGET_GITHUB_USERNAME }}
@@ -51,7 +52,7 @@ jobs:
     needs: [ "nuget-pack" ]
     permissions:
       packages: write
-    uses: TostCorp/Workflows/.github/workflows/nuget-push.yml@main
+    uses: TostCorp/.github/workflows/nuget-push.yml@main
     secrets: 
       AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       AUTH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -61,7 +62,7 @@ jobs:
     needs: [ "nuget-pack" ]
     permissions:
       packages: write
-    uses: TostCorp/Workflows/.github/workflows/nuget-push.yml@main
+    uses: TostCorp/.github/workflows/nuget-push.yml@main
     secrets: 
       AUTH_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
       AUTH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -73,7 +74,7 @@ jobs:
     needs: [ "nuget-pack" ]
     permissions:
       contents: write
-    uses: TostCorp/Workflows/.github/workflows/delete-prerelease-git-tags.yml@main
+    uses: TostCorp/.github/workflows/delete-prerelease-git-tags.yml@main
     with:
       ref: ${{ github.event.pull_request.merge_commit_sha }}
       branch_name: ${{ github.event.pull_request.head.ref }}
