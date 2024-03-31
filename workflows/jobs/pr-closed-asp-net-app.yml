@@ -1,0 +1,10 @@
+on:
+  workflow_call:
+
+jobs:
+  codeql:
+    permissions:
+      security-events: write
+    uses: TostCorp/.github/workflows/codeql.yml@main
+    with:
+      language: csharp
