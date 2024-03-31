@@ -25,7 +25,7 @@ jobs:
       packages: write
     steps:
       - name: Add Github nuget repo
-        run: nuget sources add -Username ${{ secrets.NUGET_GITHUB_USERNAME }} -Password ${{ secrets.AUTH_GITHUB_TOKEN }} -StorePasswordInClearText -Name github -Source "https://nuget.pkg.github.com/TostOrg/index.json"
+        run: nuget sources add -Username ${{ secrets.NUGET_GITHUB_USERNAME }} -Password ${{ secrets.AUTH_GITHUB_TOKEN }} -StorePasswordInClearText -Name github -Source "https://nuget.pkg.github.com/TostCorp/index.json"
 
       - name: Download Nuget Pack artifacts
         uses: actions/download-artifact@v4
