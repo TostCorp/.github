@@ -20,7 +20,7 @@ on:
   
 jobs:
   push:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith
     permissions:
       packages: write
     steps:

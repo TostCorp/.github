@@ -21,7 +21,7 @@ on:
 
 jobs:
   pack:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith
     permissions:
       contents: read
     steps:
@@ -40,7 +40,7 @@ jobs:
         run: nuget sources add -Username ${{ secrets.NUGET_GITHUB_USERNAME }} -Password ${{ secrets.AUTH_GITHUB_TOKEN }} -StorePasswordInClearText -Name github -Source "https://nuget.pkg.github.com/TostCorp/index.json"
 
       - name: Cache
-        uses: actions/cache@v4
+        uses: useblacksmith/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}

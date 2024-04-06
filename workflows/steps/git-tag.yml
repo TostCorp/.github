@@ -31,7 +31,7 @@ on:
 
 jobs:
   git_tag:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith
     outputs: 
       tag: ${{ env.VERSION }}
     permissions:
